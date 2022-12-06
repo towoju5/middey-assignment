@@ -64,21 +64,18 @@ function register_endpoint($data)
         return json_encode([
             'status'  =>  true,
             'data'    =>  [
-                'msg' =>  'No Jobs available at the moment'
+                'msg' =>  'No Jobs available at the moment',
              ],
         ]);
     }
 
-    return json_encode([
-        'status'  => true,
-        'data'    => $posts
-    ]);
+    return $posts;
 }
 
 
 // index 
 add_action('rest_api_init', function () {
-    register_rest_route('middey', '/jobs', array(
+    register_rest_route('middey/v1', '/jobs', array(
         'methods' => 'GET',
         'callback' => 'register_endpoint',
     ));
