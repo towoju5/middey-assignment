@@ -69,7 +69,7 @@ function register_endpoint($data)
         ]);
     }
 
-    return return json_encode([
+    return json_encode([
         'status'  => true,
         'data'    => $posts
     ]);
