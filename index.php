@@ -80,3 +80,60 @@ add_action('rest_api_init', function () {
         'callback' => 'register_endpoint',
     ));
 });
+
+function middey_job_search()
+{
+    register_rest_route('middey/search', 'jobs', [
+        'methods'  => WP_REST_SERVER::READABLE,
+        'callback' => 'middey_search_results'
+    ]);
+}
+ 
+function middey_search_results($data)
+{
+    $search_query = new WP_Query([
+        'post_type'      => ['middey_jobs'],
+        'posts_per_page' => 10,
+        's'              => sanitize_text_field($data['term'])
+    ]);
+ 
+    $results = [];
+ 
+    // basic error handling
+    if (false === isset($data['term']) ) {
+        return [
+            'error' => 'No search query defined...'
+        ];
+    } else {
+        if (true === empty($data['term'])) {
+            return [
+                'error' => 'Please give a term to search...'
+            ];
+        } else {
+          	// check if search query is more than 3 characters and search.
+          	// if less than 3 return notification
+            if (3 > mb_strlen(trim($data['term']))) {
+                return [
+                    'error' => 'The search term must contain at least 3 characters...'
+                ];
+            }
+        }
+    }
+ 
+    // proceed to database query
+    while ($search_query->have_posts()) {
+        $search_query->the_post();
+ 
+        array_push($results, [
+            'title'     => get_the_title(),
+            'permalink' => get_the_permalink(),
+        ]);
+    }
+ 
+    wp_reset_postdata();
+ 
+    return $results;
+}
+ 
+add_action('rest_api_init', 'middey_job_search');
+
