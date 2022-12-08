@@ -91,11 +91,11 @@ function middeyLoginUser()
 
 	if($user){
 		$data = [
-			'user_id'	    =>	$user->ID,
-            'user_email'    =>  $user->user_email,
-            'username'      =>  $user->username,
-            'time_of_login' =>  $user->user_last_login,
-            'access_token'  =>  $user->access_token
+		    'user_id'	    =>	$user->ID,
+		    'user_email'    =>  $user->user_email,
+		    'username'      =>  $user->username,
+		    'time_of_login' =>  $user->user_last_login,
+		    'access_token'  =>  $user->access_token
 		];
 		return get_success_response(200, "Login successful", $data);
 	}	
@@ -114,9 +114,9 @@ function middeyDebitUser(){
     // check if transaction ID exits
     if ($post = get_post_meta($transaction_id, 'debit', true)) {
 		return [
-            'txn_id'    =>  $transaction_id,
-            'exist'     =>  'Transaction already exists'
-        ];
+		    'txn_id'    =>  $transaction_id,
+		    'exist'     =>  'Transaction already exists'
+		];
 	}
     
     if($update_balance){
