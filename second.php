@@ -17,10 +17,10 @@ add_action('rest_api_init', function () {
         'methods' => 'GET',
         'callback' => 'middeyRegisterUser',
     ));
-//     register_rest_route('middey/v2', 'reg', array(
-//         'methods' => 'POST',
-//         'callback' => 'middeyRegisterUser',
-//     ));
+    register_rest_route('middey/v2', 'reg', array(
+        'methods' => 'GET',
+        'callback' => 'middeyRegisterUser',
+    ));
     register_rest_route('middey/v1', 'login', array(
         'methods' => 'GET',
         'callback' => 'middeyLoginUser',
@@ -82,6 +82,15 @@ function middeyRegisterUser()
 
 function middeyLoginUser()
 {
+    if(!isset($_REQUEST['user_login']) OR empty($_REQUEST['user_login'])){
+      $err[] = "Email/Username is required (user_login)";
+    }
+    if(!isset($_REQUEST['user_password']) OR empty($_REQUEST['user_password'])){
+      $err[] = "Password is required (user_password)";
+    }
+    if ( $err && !empty($err)) {
+      return get_error_response(400, "Validation error", $err);
+    }
 	$credentials = $_REQUEST;
 	$user = wp_authenticate( sanitize_text_field($credentials['user_login']), $credentials['user_password'] );
 
@@ -91,11 +100,11 @@ function middeyLoginUser()
 
 	if($user){
 		$data = [
-		    'user_id'	    =>	$user->ID,
-		    'user_email'    =>  $user->user_email,
-		    'username'      =>  $user->username,
-		    'time_of_login' =>  $user->user_last_login,
-		    'access_token'  =>  $user->access_token
+			'user_id'	    =>	$user->ID,
+            'user_email'    =>  $user->user_email,
+            'username'      =>  $user->username,
+            'time_of_login' =>  $user->user_last_login,
+            'access_token'  =>  $user->access_token
 		];
 		return get_success_response(200, "Login successful", $data);
 	}	
@@ -114,9 +123,9 @@ function middeyDebitUser(){
     // check if transaction ID exits
     if ($post = get_post_meta($transaction_id, 'debit', true)) {
 		return [
-		    'txn_id'    =>  $transaction_id,
-		    'exist'     =>  'Transaction already exists'
-		];
+            'txn_id'    =>  $transaction_id,
+            'exist'     =>  'Transaction already exists'
+        ];
 	}
     
     if($update_balance){
