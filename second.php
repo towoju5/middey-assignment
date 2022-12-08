@@ -11,22 +11,73 @@
  * Author URI:        https://towoju.com.ng/
  */
 
+
+add_action('rest_api_init', function () {
+    register_rest_route('middey/v1', 'register', array(
+        'methods' => 'GET',
+        'callback' => 'middeyRegisterUser',
+    ));
+//     register_rest_route('middey/v2', 'reg', array(
+//         'methods' => 'POST',
+//         'callback' => 'middeyRegisterUser',
+//     ));
+    register_rest_route('middey/v1', 'login', array(
+        'methods' => 'GET',
+        'callback' => 'middeyLoginUser',
+    ));
+});
+
+
 function middeyRegisterUser()
 {
-	$data = [
-		'first_name'	=>	sanitize_text_field($_POST('first_name')),
-		'last_name'		=>	sanitize_text_field($_POST('last_name')),
-		'username'		=>	sanitize_text_field($_POST('username')),
-		'user_email'	=>	sanitize_email($_POST('user_email')),
-		'user_password'	=>	sanitize_text_field($_POST('user_password')),
-	];
+  	try {
+    	$err = [];
+        if(!isset($_REQUEST['first_name']) OR empty($_REQUEST['first_name'])){
+            $err[] = "First Name is required (first_name)";
+        }
+        if(!isset($_REQUEST['last_name']) OR empty($_REQUEST['last_name'])){
+            $err[] = "Last Name is required (last_name)";
+        }
+        if(!isset($_REQUEST['username']) OR empty($_REQUEST['username'])){
+            $err[] = "Username is required (username)";
+        }
+        if(!isset($_REQUEST['user_email']) OR empty($_REQUEST['user_email'])){
+            $err[] = "Email is required (user_email)";
+        }
+        if(!isset($_REQUEST['user_password']) OR empty($_REQUEST['user_password'])){
+            $err[] = "Password is required (user_password)";
+        }
+        if ( $err && !empty($err)) {
+            return get_error_response(400, "Validation error", $err);
+        }
 
-	if($user = wp_insert_user($data)){
-		$data = [
-			'user_id'	=>	$user->ID
-		];
-		return get_success_response(200, "User created successfully", $data);
-	}	
+        $first_name		=	sanitize_text_field($_REQUEST['first_name']);
+        $last_name			=	sanitize_text_field($_REQUEST['last_name']);
+        $username			=	sanitize_text_field($_REQUEST['username']);
+        $user_email		=	sanitize_email($_REQUEST['user_email']);
+        $user_password		=	sanitize_text_field($_REQUEST['user_password']);
+
+        $exists = get_user_by( 'email', $user_email );
+
+        if ( $exists && !empty($exists)) {
+            $error = [
+              	'msg' => "User already exists"
+            ];
+            return get_error_response(409, "User Exists", $error);
+        }
+
+
+        $user_id = wp_create_user( $first_name, $last_name, $username, $user_email, $user_password );
+        if($user_id){
+            $data = [
+                'user_id'	=>	$user_id
+            ];
+            return get_success_response(200, "User created successfully", $data);
+        }	
+    } catch(\Exception $th) {
+    	return $th->getMessage();
+    }
+    
 }
 
 function middeyLoginUser()
